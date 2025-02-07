@@ -1,16 +1,5 @@
-package com.example.yourapp
-
-import android.content.Context
-import android.view.View
-import com.google.android.gms.wallet.button.AddToGoogleWalletButton
-import io.flutter.plugin.platform.PlatformView
-
-class GoogleWalletButtonView(context: Context) : PlatformView {
-    private val walletButton: AddToGoogleWalletButton = AddToGoogleWalletButton(context)
-
-    override fun getView(): View {
-        return walletButton
+class NativeViewFactory : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+    override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
+        val creationParams = args as Map<String?, Any?>?
+        return NativeView(context, viewId, creationParams)
     }
-
-    override fun dispose() {}
-}

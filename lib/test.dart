@@ -1,151 +1,121 @@
-
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Responsive Flutter Web',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const MainScreen(),
+      home: UserListScreen(),
     );
   }
 }
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  Widget _currentScreen = const HomeScreen();
-
-  void _navigateTo(String screen) {
-    setState(() {
-      if (screen == 'Home') {
-        _currentScreen = const HomeScreen();
-      } else if (screen == 'User Management') {
-        _currentScreen = const UserManagementScreen();
-      } else if (screen == 'Logout') {
-        _showLogoutDialog();
-      }
-    });
-  }
-
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Logout"),
-        content: const Text("Are you sure you want to logout?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Add logout logic here
-            },
-            child: const Text("Logout"),
-          ),
-        ],
-      ),
-    );
-  }
+class UserListScreen extends StatelessWidget {
+  final List<Map<String, String>> users = [
+    {
+      "name": "Alexandre Makovetsky",
+      "email": "example1@example.com",
+      "device": "Apple iPhone",
+      "status": "Active"
+    },
+    {
+      "name": "Alexandre Makovetsky",
+      "email": "example2@example.com",
+      "device": "Apple Watch",
+      "status": "Active"
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double sidebarWidth = constraints.maxWidth * 0.15;
-        double contentWidth = constraints.maxWidth * 0.85;
+    return Scaffold(
+      appBar: AppBar(title: Text("User List")),
+      body: users.isNotEmpty
+          ? Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  // ✅ Header only appears when there is data
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                    color: Colors.grey[200],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(child: Text("Name", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(child: Text("Email", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(child: Text("Device Type", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(child: Text("Status", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(child: Text("Actions", style: TextStyle(fontWeight: FontWeight.bold))),
+                      ],
+                    ),
+                  ),
 
-        if (constraints.maxWidth < 600) {
-          // Mobile Layout: Collapsible sidebar
-          sidebarWidth = 60;
-          contentWidth = constraints.maxWidth - sidebarWidth;
-        }
-
-        return Scaffold(
-          body: Row(
-            children: [
-              // Sidebar (Adjustable Width)
-              Container(
-                width: sidebarWidth,
-                color: Colors.blueGrey[900],
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildMenuItem("Home"),
-                    _buildMenuItem("User Management"),
-                    _buildMenuItem("Logout"),
-                  ],
-                ),
+                  // ✅ ListView.builder inside Expanded
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final user = users[index];
+                        return Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(user["name"] ?? "")),
+                                Expanded(child: Text(user["email"] ?? "")),
+                                Expanded(child: Text(user["device"] ?? "")),
+                                Expanded(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(user["status"] ?? "",
+                                        style: TextStyle(color: Colors.white)),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      TextButton.icon(
+                                        onPressed: () {},
+                                        icon: Icon(Icons.pause, color: Colors.blue),
+                                        label: Text("Suspend",
+                                            style: TextStyle(color: Colors.blue)),
+                                      ),
+                                      TextButton.icon(
+                                        onPressed: () {},
+                                        icon: Icon(Icons.delete, color: Colors.red),
+                                        label: Text("Delete",
+                                            style: TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-
-              // Main Content (Adjustable Width)
-              SizedBox(
-                width: contentWidth,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _currentScreen,
-                ),
+            )
+          : Center(
+              child: Text(
+                "No Data Available",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildMenuItem(String title) {
-    return InkWell(
-      onTap: () => _navigateTo(title),
-      onHover: (isHovering) {
-        setState(() {}); // For hover effect
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
-        child: Text(
-          title,
-          style: const TextStyle(color: Colors.white, fontSize: 18),
-        ),
-      ),
-    );
-  }
-}
-
-// Home Screen
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text("Home Screen", style: TextStyle(fontSize: 24)),
-    );
-  }
-}
-
-// User Management Screen
-class UserManagementScreen extends StatelessWidget {
-  const UserManagementScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text("User Management Screen", style: TextStyle(fontSize: 24)),
+            ),
     );
   }
 }

@@ -1,31 +1,55 @@
 
-import 'package:json_annotation/json_annotation.dart';
+import 'package:credentialtool_web/data/datasources/remote/api/hid_origo_api.dart';
+import 'package:credentialtool_web/domain/models/user_model.dart';
+import 'package:credentialtool_web/utils/constants/models/api_response.g.dart';
 
-part 'api_response.g.dart';
+abstract class OZUserRemoteDataSource {
 
-@JsonSerializable(genericArgumentFactories: true, createToJson: false)
-class ZCTApiResponse<T> {
-  final bool isError;
-  final T? data;
-  final ApiResponseError? error;
 
-  ZCTApiResponse({required this.isError, this.data, this.error});
+  Future<User> getUserDetails(String email);
 
-  factory ZCTApiResponse.fromJson(
-          Map<String, dynamic> json, T Function(Object?) fromJsonT) =>
-      _$ZCTApiResponseFromJson(json, fromJsonT);
+  Future<bool> suspendPass();
+
+  Future<bool> resumePass();
+
+  Future<bool> revokePass();
+
+
 }
 
-@JsonSerializable(createToJson: false)
-class ApiResponseError {
-  final String message;
-  final String stackTrace;
+class OZUserRemoteDataSourceImpl implements OZUserRemoteDataSource {
 
-  ApiResponseError({
-    this.message = '',
-    this.stackTrace = '',
-  });
 
-  factory ApiResponseError.fromJson(Map<String, dynamic> json) =>
-      _$ApiResponseErrorFromJson(json);
+  final ZctHidIOrigoApi api;
+
+  OZUserRemoteDataSourceImpl({required this.api});
+
+
+  @override
+  Future<User> getUserDetails(String email) async {
+
+    final response = await api.getFetchUserPassDetails();
+    return response.data.toEmployeeEntity();
+    // TODO: implement getUserDetails
+  }
+  
+  @override
+  Future<bool> resumePass() {
+    // TODO: implement resumePass
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future<bool> revokePass() {
+    // TODO: implement revokePass
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future<bool> suspendPass() {
+    // TODO: implement suspendPass
+    throw UnimplementedError();
+  }
 }
+
+

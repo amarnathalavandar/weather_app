@@ -1,32 +1,46 @@
-import 'package:credentialtool_web/domain/models/user_details_remote_entity.dart';
+
+import 'dart:io';
+
 import 'package:dio/dio.dart';
-import 'package:retrofit/error_logger.dart';
-import 'package:retrofit/http.dart';
 
-part 'hid_origo_api.g.dart';
+class HeadersInterceptor extends Interceptor {
+  static const String subscriptionKeyHeader = 'Ocp-Apim-Subscription-Key';
+  static const String authorizationHeader = 'Authorization';
+  static const String timestampHeader = 'Timestamp';
 
+  final versionsPath = '/Versions';
 
-const String baseUrl = "https://zna-sit-appservice-middleware.azurewebsites.net/HIDOrigo";
+  @override
+  Future onResponse(
+    Response response,
+    ResponseInterceptorHandler handler,
+  ) {
+    handler.next(response);
+  }
 
+  @override
+  Future onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final headers = <String, dynamic>{
+      subscriptionKeyHeader:'6c657d3a94b04387bc68058d43c6250a',
+      timestampHeader: timestamp,
+      HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+      HttpHeaders.acceptHeader: 'application/json; charset=UTF-8',
+    };
+    print('AMAR on request $headers');
+    /* if (!options.path.contains(versionsPath)) {
+      final result = await locator<AccessTokenRepo>().getAccessToken();
 
-@RestApi(baseUrl:baseUrl) 
-abstract class ZctHidIOrigoApi {
+      result.ifSuccess((token) {
+        headers[authorizationHeader] = 'bearer ${token.accessToken}';
+      });
+    } */
 
-  factory ZctHidIOrigoApi(Dio dio) = _ZctHidIOrigoApi;
-
-
-  @POST("/FetchUserPassDetails")
-  Future<List<UserDetailsRemoteEntity>> getFetchUserPassDetails(
-    @Query("emailAddress") String emailId,
-  );
-
+    options.headers.addAll(headers);
+    handler.next(options);
+  }
   
-  /* @PUT('/suspend')
-  Future<List<User>> suspendUserPss();
-
-
-  @GET("/spotlight/newsfeed-events/{eventId}/likes")
-  Future<LikesRemoteEntity> getLikes(
-    @Path("eventId") String eventId,
-  ); */
 }

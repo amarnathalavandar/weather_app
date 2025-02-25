@@ -1,88 +1,32 @@
-import 'package:credentialtool_web/config/themes/theme.dart';
-import 'package:credentialtool_web/data/datasources/remote/api/hid_origo_api.dart';
-import 'package:credentialtool_web/data/datasources/zct_hid_origo_datasource.dart';
-import 'package:credentialtool_web/domain/repositories/user_management_repository.dart';
+import 'package:credentialtool_web/domain/models/user_details_remote_entity.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'presentation/pages/user_management/user_management_screen.dart';
+import 'package:retrofit/error_logger.dart';
+import 'package:retrofit/http.dart';
 
-void main() {
-  runApp(
-    MultiRepositoryProvider(
-      providers: [
-        RepositoryProvider<ZctHidIOrigoApi>(
-          create: (context) => ZctHidIOrigoApi(Dio()),
-        ),
-        RepositoryProvider<OZUserRemoteDataSourceImpl>(
-          create: (context) => OZUserRemoteDataSourceImpl(
-            api: RepositoryProvider.of<ZctHidIOrigoApi>(context),
-          ),
-        ),
-        RepositoryProvider<UserManagementRepository>(
-          create: (context) => UserManagementRepository(
-            remoteDataSource: RepositoryProvider.of<OZUserRemoteDataSourceImpl>(context),
-          ),
-        ),
-      ],
-      child: const MyApp(), // Now only provide MyApp once
-    ),
+part 'hid_origo_api.g.dart';
+
+
+const String baseUrl = "https://zna-sit-appservice-middleware.azurewebsites.net/HIDOrigo";
+
+
+@RestApi(baseUrl:baseUrl) 
+abstract class ZctHidIOrigoApi {
+
+  factory ZctHidIOrigoApi(Dio dio) = _ZctHidIOrigoApi;
+
+
+  @POST("/FetchUserPassDetails")
+  Future<List<UserDetailsRemoteEntity>> getFetchUserPassDetails(
+    @Query("emailAddress") String emailId,
   );
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  
+  /* @PUT('/suspend')
+  Future<List<User>> suspendUserPss();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      debugShowMaterialGrid: false,
-      title: 'Flutter Demo',
-      theme: ZCTTheme.standardTheme,
-      home: const UserManagementScreen(), // Ensure this is wrapped with const if possible
-    );
-  }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text('$_counter', style: Theme.of(context).textTheme.headlineMedium),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+  @GET("/spotlight/newsfeed-events/{eventId}/likes")
+  Future<LikesRemoteEntity> getLikes(
+    @Path("eventId") String eventId,
+  ); */
 }

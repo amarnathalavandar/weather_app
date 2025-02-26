@@ -1,46 +1,71 @@
+import 'package:credentialtool_web/domain/models/user_details_remote_entity.dart';
+import 'package:credentialtool_web/utils/constants/models/api_response.dart';
+import 'package:dio/dio.dart' hide Headers;
+import 'package:retrofit/error_logger.dart';
+import 'package:retrofit/http.dart';
 
-import 'dart:io';
+part 'hid_origo_api.g.dart';
 
-import 'package:dio/dio.dart';
 
-class HeadersInterceptor extends Interceptor {
-  static const String subscriptionKeyHeader = 'Ocp-Apim-Subscription-Key';
-  static const String authorizationHeader = 'Authorization';
-  static const String timestampHeader = 'Timestamp';
+const String baseUrl = "https://blu-sit-apimanagement-middleware.azure-api.net/private/onezurich";
 
-  final versionsPath = '/Versions';
 
-  @override
-  Future onResponse(
-    Response response,
-    ResponseInterceptorHandler handler,
-  ) {
-    handler.next(response);
-  }
+@RestApi(baseUrl:baseUrl) 
+abstract class ZctHidIOrigoApi {
+  factory ZctHidIOrigoApi(Dio dio) = _ZctHidIOrigoApi;
 
-  @override
-  Future onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final headers = <String, dynamic>{
-      subscriptionKeyHeader:'6c657d3a94b04387bc68058d43c6250a',
-      timestampHeader: timestamp,
-      HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
-      HttpHeaders.acceptHeader: 'application/json; charset=UTF-8',
-    };
-    print('AMAR on request $headers');
-    /* if (!options.path.contains(versionsPath)) {
-      final result = await locator<AccessTokenRepo>().getAccessToken();
 
-      result.ifSuccess((token) {
-        headers[authorizationHeader] = 'bearer ${token.accessToken}';
-      });
-    } */
+  @POST("/origohid/v1.0.0/HIDOrigo/FetchUserPassDetails")
+  Future<ZCTApiResponse<List<UserDetailsRemoteEntity>>> getFetchUserPassDetails(
+    @Body() Map<String, dynamic> body,
+    );
 
-    options.headers.addAll(headers);
-    handler.next(options);
-  }
   
+  @GET("/origohid/v1.0.0/api/Examples")
+  Future<void> getExamples(
+    
+);
+
+
+  /* @PUT('/suspend')
+  Future<List<User>> suspendUserPss();
+
+
+  @GET("/spotlight/newsfeed-events/{eventId}/likes")
+  Future<LikesRemoteEntity> getLikes(
+    @Path("eventId") String eventId,
+  ); */
+}
+
+
+
+
+import 'package:json_annotation/json_annotation.dart';
+
+part 'api_response.g.dart';
+
+@JsonSerializable(genericArgumentFactories: true, createToJson: false)
+class ZCTApiResponse<T> {
+  final T? data;
+  final ApiResponseError? error;
+
+  ZCTApiResponse({this.data, this.error});
+
+  factory ZCTApiResponse.fromJson(
+          Map<String, dynamic> json, T Function(Object?) fromJsonT) =>
+      _$ZCTApiResponseFromJson(json, fromJsonT);
+}
+
+@JsonSerializable(createToJson: false)
+class ApiResponseError {
+  final String message;
+  final String stackTrace;
+
+  ApiResponseError({
+    this.message = '',
+    this.stackTrace = '',
+  });
+
+  factory ApiResponseError.fromJson(Map<String, dynamic> json) =>
+      _$ApiResponseErrorFromJson(json);
 }

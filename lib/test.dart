@@ -3,64 +3,57 @@ import 'package:credentialtool_web/presentation/cubit/user_management/cubit/user
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class UserManagementCubit extends Cubit<UserManagementState> {
-  UserManagementCubit(this.userManagementRepository) : super (const UserManagementState());
+  UserManagementCubit(this.userManagementRepository) : super(const UserManagementState());
 
-   //List<User> _allUsers =  List<User>.from(User.predefinedUsers);
+  final UserManagementRepository userManagementRepository;
 
-   final UserManagementRepository userManagementRepository;
-
-
+  // Search for user by email
   Future<void> searchUser(String query) async {
     print('Query: $query');
 
-    emit(state.copyWith(status: UserStatus.loading),);
+    emit(state.copyWith(status: UserStatus.loading));
 
     final userDetailsList = await userManagementRepository.getUserDetailsByEmailId(query);
-    
-   
-    emit(state.copyWith(status: UserStatus.userloaded,userList: userDetailsList),);
+
+    emit(state.copyWith(status: UserStatus.userloaded, userList: userDetailsList));
   }
 
-  Future<void> updateUserStatus(String passId, String currentStatus,String deviceType) async {
-    emit(state.copyWith(isStatusLoading: true),);
-    String newStatus='';
-    if(currentStatus=='ACTIVE')
-    {
-      newStatus='SUSPEND';
-    }
-    else
-    {
-      newStatus='RESUME';
+  // Update user status (Suspend/Resume)
+  Future<void> updateUserStatus(String passId, String currentStatus, String deviceType) async {
+    // Set loading state for status change
+    emit(state.copyWith(isStatusLoading: true));
 
-    }
-    print('pass id: $passId - deviceType :$deviceType CURENT: $currentStatus - NEW :$newStatus');
-    final isStatusChanged = await userManagementRepository.togglePassStatus(passId,newStatus);
-    print("YES STATUS CHANGED :$isStatusChanged");
+    String newStatus = currentStatus == 'ACTIVE' ? 'SUSPEND' : 'RESUME';
+    print('pass id: $passId - deviceType :$deviceType CURRENT: $currentStatus - NEW :$newStatus');
 
-    /* _allUsers = _allUsers.map((user) {
-      if (user.username == username && user.deviceType==deviceType) {
-        /// Here just updating user model in place of calling API service to do actual suspend / active
-        return User(   
-          username: user.username,
-          email: user.email,
-          deviceType: user.deviceType,
-          passStatus: newStatus, 
+    // Call the repository to toggle the user status
+    final isStatusChanged = await userManagementRepository.togglePassStatus(passId, newStatus);
+    print("YES STATUS CHANGED: $isStatusChanged");
+
+    if (isStatusChanged) {
+      // Update the user status in the user list
+      final updatedUserList = List.from(state.userList!); // Make a copy of the user list
+      final userIndex = updatedUserList.indexWhere((user) => user.passId == passId);
+
+      if (userIndex != -1) {
+        // If the user is found, update their status
+        updatedUserList[userIndex] = updatedUserList[userIndex].copyWith(
+          passStatus: newStatus,
         );
       }
-      return user;
-    }).toList();  */
-    /* print('Updated Users: ${_allUsers.map((user) =>
-    '${user.username} - ${user.email} ${user.deviceType} (${user.passStatus})'
-    ).toList()}');
 
-
-    final filteredUsers = _allUsers
-        .where((user) => user.username.toLowerCase().contains(username.toLowerCase()))
-        .toList(); */
-
-       emit(state.copyWith(status: UserStatus.userloaded, userList:  []));
-
+      // Emit the updated state with the new user list
+      emit(state.copyWith(
+        isStatusLoading: false,
+        userList: updatedUserList, // Set the updated list
+        status: UserStatus.userloaded, // Assuming the data was successfully updated
+      ));
+    } else {
+      // Handle failure to change status (e.g., show error)
+      emit(state.copyWith(
+        isStatusLoading: false,
+        errorMessage: 'Failed to update user status.',
+      ));
+    }
   }
-
-
 }

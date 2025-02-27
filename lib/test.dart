@@ -1,22 +1,8 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SnackBarDemo(),
-    );
-  }
-}
-
-class SnackBarDemo extends StatelessWidget {
-  void _showSnackBar(BuildContext context) {
-    var snackBar = SnackBar(
+class CustomSnackBar {
+  static void show(BuildContext context, String message) {
+    final snackBar = SnackBar(
       behavior: SnackBarBehavior.floating,
       margin: EdgeInsets.only(
         bottom: MediaQuery.of(context).size.height - kToolbarHeight - 80, // 30px below AppBar
@@ -33,7 +19,7 @@ class SnackBarDemo extends StatelessWidget {
           Icon(Icons.error_outline, color: Colors.white),
           Expanded(
             child: Text(
-              "Error occurred, please try again later",
+              message,
               style: TextStyle(color: Colors.white),
               textAlign: TextAlign.center,
             ),
@@ -50,18 +36,5 @@ class SnackBarDemo extends StatelessWidget {
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Floating SnackBar Example')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => _showSnackBar(context),
-          child: Text('Show SnackBar'),
-        ),
-      ),
-    );
   }
 }

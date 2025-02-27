@@ -1,105 +1,46 @@
+import 'package:credentialtool_web/presentation/pages/user_management/widgets/SearchButton.dart';
+import 'package:credentialtool_web/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mattortho_web/shared/widgets/header/widgets/elevated_button.dart';
-import 'package:mattortho_web/shared/widgets/header/widgets/search_field.dart';
-import '../../../../../utils/app_constants.dart';
-import '../../../screens/desktop/screens/login/authentication_bloc.dart';
-import '../../../screens/desktop/screens/login/desktop_login.dart';
-import '../../../screens/desktop/screens/user/user_profile_screen.dart';
-import '../../snackbar/snack_bar.dart';
 
-class Header extends StatelessWidget {
-  const Header({
-    super.key,
-    required this.title,
-    this.isSearch = false,
-  });
-
-  final String title;
-  final bool isSearch;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          title,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge!
-              .copyWith(color: Colors.white),
-        ),
-        const Spacer(flex: 2),
-        const SizedBox(width: 200, child: MOSearchField()),
-        const ProfileCard()
-      ],
-    );
-  }
-}
-
-class ProfileCard extends StatelessWidget {
-  const ProfileCard({
+class ZCTMenu extends StatelessWidget {
+  const ZCTMenu({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    final FocusNode _buttonFocusNode = FocusNode(debugLabel: 'Menu Button');
-
+    final FocusNode buttonFocusNode = FocusNode(debugLabel: 'Menu Button');
     return Container(
-        margin: const EdgeInsets.only(left: defaultPadding),
+      height: 80,
+        margin: const EdgeInsets.only(left: 30),
         padding: const EdgeInsets.symmetric(
-          horizontal: defaultPadding,
-          vertical: defaultPadding / 2,
+          horizontal: 10,
+          vertical: 30 / 2,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2D3E),
+          color: const Color.fromARGB(255, 255, 255, 255),
           // Theme.of(context).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
           border: Border.all(color: Colors.white10),
         ),
         child: MenuAnchor(
-          childFocusNode: _buttonFocusNode,
+          childFocusNode: buttonFocusNode,
           menuChildren: <Widget>[
             MenuItemButton(
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return const Dialog(
-                      child: UserProfileScreen(),
-                    );
-                  },
-                );
-              },
-              child: const Text('User Profile'),
-            ),
-            MenuItemButton(
-              onPressed: () {
-                print('CLICKIN SIGN OUT BUTTON');
+                print('CLICKING SIGN OUT BUTTON');
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return  AlertDialog(
                         title:
-                            const Text('Do you want to exit this application?'),
+                        const Text('Do you want to exit this application?'),
                         content: const Text('We hate to see you leave...'),
-                        backgroundColor: secondaryColor,
+                        backgroundColor: Colors.white,
                         actions: <Widget>[
-                          MOElevatedButton(buttonText: 'No',onPressed: (){Navigator.of(context).pop(true);},),
-                          MOElevatedButton(buttonText: 'Yes',onPressed:()
-                          {
-                            context.read<AuthenticationBloc>().add(UserLogout());
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const DesktopLogin()), // Navigate to HomeScreen
-                            );
-                            showCustomSnackBar(context, 'You have been successfully logged out!',Icons.info_outline
-                            );
-                          }),
+                          Searchbutton(onPressed: (){Navigator.of(context).pop(true);}, buttonName: 'No',),
+                          Searchbutton(onPressed: (){Navigator.of(context).pop(true);}, buttonName: 'Yes',),
                         ],
                       );
                     });
@@ -108,7 +49,26 @@ class ProfileCard extends StatelessWidget {
             ),
           ],
           builder: (_, MenuController controller, Widget? child) {
-            return Row(
+            return 
+            GestureDetector(
+              onTap: () {
+                if (controller.isOpen) {
+                  controller.close();
+                } else {
+                  controller.open();
+                }
+              },
+              child: Row(
+                children: [
+                   SvgPicture.asset(
+                    'icons/user_profile.svg',
+                  ),
+                   const SizedBox(width: 10),
+                  Text('System Admin', style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: ZCTColors.zurichBlue)),
+                ],
+              ),
+            );
+            /* Row(
               children: [
                 SvgPicture.asset(
                   "assets/icons/profile.svg",
@@ -135,9 +95,8 @@ class ProfileCard extends StatelessWidget {
                   icon: const Icon(Icons.more_vert),
                 )
               ],
-            );
+            ); */
           },
         ));
   }
 }
-

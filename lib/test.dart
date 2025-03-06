@@ -15,12 +15,28 @@ class EmailSearchTextField extends StatefulWidget {
 
 class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
+  final FocusNode _focusNode = FocusNode();
+  AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
+
   @override
   void initState() {
     super.initState();
+
+    // Clear error when the user taps the text field
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        setState(() {
+          _autoValidateMode = AutovalidateMode.disabled;
+        });
+      }
+    });
   }
 
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +57,13 @@ class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
                 children: [
                   SizedBox(
                     child: TextFormField(
+                      focusNode: _focusNode,
                       autovalidateMode: _autoValidateMode,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         } 
-                         if (!RegExp(
+                        if (!RegExp(
                                 r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
                             .hasMatch(value)) {
                           return 'Enter a valid email';
@@ -85,6 +102,10 @@ class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
             Searchbutton(
               controller: widget.controller,
               onPressed: () {
+                setState(() {
+                  _autoValidateMode = AutovalidateMode.always;
+                });
+                
                 if (_formKey.currentState?.validate() == true) {
                   context.read<UserManagementCubit>().searchUser(widget.controller.text);
                 }

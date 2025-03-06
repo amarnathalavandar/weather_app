@@ -15,22 +15,23 @@ class EmailSearchTextField extends StatefulWidget {
 
 class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+  
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(() {
-      setState(() {});
-    });
   }
+
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 800,
+      width: 636,
+      height: 75,
       child: Form(
         key: _formKey,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             /// EMAIL INPUT FIELD
             SizedBox(
@@ -39,12 +40,13 @@ class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
-                    height: 48, // Maintain height even with an error message
                     child: TextFormField(
+                      autovalidateMode: _autoValidateMode,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
-                        } else if (!RegExp(
+                        } 
+                         if (!RegExp(
                                 r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
                             .hasMatch(value)) {
                           return 'Enter a valid email';

@@ -1,67 +1,97 @@
 
+import 'package:credentialtool_web/presentation/cubit/user_management/cubit/user_management_cubit.dart';
+import 'package:credentialtool_web/presentation/pages/user_management/widgets/SearchButton.dart';
+import 'package:flutter/material.dart';
+import 'package:credentialtool_web/utils/constants/colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:dio/dio.dart';
 
-class HeadersInterceptor extends Interceptor {
-  static const String subscriptionKeyHeader = 'Ocp-Apim-Subscription-Key';
-  static const String authorizationHeader = 'Authorization';
-  static const String timestampHeader = 'Timestamp';
+class EmailSearchTextField extends StatefulWidget {
+  const EmailSearchTextField({
+    super.key, required this.controller,
+  });
 
-  final versionsPath = '/Versions';
+  final TextEditingController controller;
+  @override
+  State<EmailSearchTextField> createState() => _EmailSearchTextFieldState();
+}
+final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
 
   @override
-  void onResponse(
-    Response response,
-    ResponseInterceptorHandler handler,
-  ) {
-    print('AMAR  onResponse :reponse :${response.statusCode}');
-    print('AMAR  onResponse :reponse :${response.data}');
-    print('AMAR  onResponse :reponse :${response.extra}');
-    print('AMAR  onResponse :reponse :${response.statusMessage}');
-    handler.next(response);
-    //return super.onResponse(response,handler);
-
+  void initState() {
+    super.initState();
+    //widget.controller.text='amarnath.alavandar@zurichna.com';
+    widget.controller.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
-  void onError(
-    DioException err,
-    ErrorInterceptorHandler handler
-  ){
-    print('API Rquest failed 1 :${err.requestOptions.uri}');
-    print('API Rquest failed 2 :${err.error.toString()}');
-    print('API Rquest failed 3:${err.response?.data}');
-    handler.next(err);
-  }
-
-
-  @override
-  Future onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final headers = <String, dynamic>{
-      //subscriptionKeyHeader:'6c657d3a94b04387bc68058d43c6250a',
-      subscriptionKeyHeader:'77ee0320ff254c62bbd446b0fc0ea61e',
-      'Content-Type': 'application/json; charset=UTF-8'
-    };
-    print('AMAR on request $headers');
-    /* if (!options.path.contains(versionsPath)) {
-      final result = await locator<AccessTokenRepo>().getAccessToken();
-
-      result.ifSuccess((token) {
-        headers[authorizationHeader] = 'bearer ${token.accessToken}';
-      });
-    } */
-
-    options.headers.addAll(headers);
-    if (options.headers['Content-Type'] ==
-          'application/x-www-form-urlencoded') {
-        options.data = FormData.fromMap(options.data);
-      }
-      print('AMAR1 on request $headers');
-
-    super.onRequest(options, handler);
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 800,
+      height: 48,
+      child: Form(
+        key: _formKey,
+        child: Row(
+          children: [
+            SizedBox(
+              width: 500,
+              height: 48,
+              child: TextFormField(
+              
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  } else if (!RegExp(
+                          r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+                      .hasMatch(value)) {
+                    return 'Enter a valid email';
+                  } 
+                  return null;
+                },
+                controller: widget.controller,
+                decoration: InputDecoration(
+                  fillColor:ZCTColors.trueWhite,
+                  filled: true,
+                  alignLabelWithHint: true,
+                  labelText: 'Search by email',
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
+                  labelStyle: Theme.of(context).primaryTextTheme.labelMedium,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(24)
+                 ),
+                 hoverColor:  ZCTColors.trueWhite,
+                 suffixIcon: widget.controller.text.isEmpty ? const Icon(Icons.search): IconButton(
+                  splashColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onPressed: widget.controller.clear,
+                  icon: const Icon(Icons.clear),
+                ) 
+                ),
+              ),
+            ),
+            SizedBox(width: 30,),
+             /// SEARCH BUTTON
+         Searchbutton(
+          controller: widget.controller,onPressed:(){
+            print('SEARCH PRESSED');
+            if (_formKey.currentState?.validate() == true) {
+              context.read<UserManagementCubit>().searchUser(widget.controller.text);
+            }
+          },
+          buttonName: 'Search',),
+          ],
+        ),
+       
+        
+      ),
+      
+    );
   }
 }
+

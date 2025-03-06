@@ -16,7 +16,8 @@ class EmailSearchTextField extends StatefulWidget {
 class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final FocusNode _focusNode = FocusNode();
-  AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
+  bool _showError = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -26,7 +27,8 @@ class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
         setState(() {
-          _autoValidateMode = AutovalidateMode.disabled;
+          _showError = false;
+          _errorMessage = null;
         });
       }
     });
@@ -58,18 +60,6 @@ class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
                   SizedBox(
                     child: TextFormField(
                       focusNode: _focusNode,
-                      autovalidateMode: _autoValidateMode,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        } 
-                        if (!RegExp(
-                                r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-                            .hasMatch(value)) {
-                          return 'Enter a valid email';
-                        }
-                        return null;
-                      },
                       controller: widget.controller,
                       decoration: InputDecoration(
                         fillColor: ZCTColors.trueWhite,
@@ -81,6 +71,7 @@ class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
                           borderSide: BorderSide.none,
                           borderRadius: BorderRadius.circular(24),
                         ),
+                        errorText: _showError ? _errorMessage : null,
                         suffixIcon: widget.controller.text.isEmpty
                             ? const Icon(Icons.search)
                             : IconButton(
@@ -102,13 +93,26 @@ class _EmailSearchTextFieldState extends State<EmailSearchTextField> {
             Searchbutton(
               controller: widget.controller,
               onPressed: () {
-                setState(() {
-                  _autoValidateMode = AutovalidateMode.always;
-                });
-                
-                if (_formKey.currentState?.validate() == true) {
-                  context.read<UserManagementCubit>().searchUser(widget.controller.text);
+                final email = widget.controller.text;
+                if (email.isEmpty) {
+                  setState(() {
+                    _showError = true;
+                    _errorMessage = 'Please enter your email';
+                  });
+                  return;
                 }
+                if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                    .hasMatch(email)) {
+                  setState(() {
+                    _showError = true;
+                    _errorMessage = 'Enter a valid email';
+                  });
+                  return;
+                }
+
+                _showError = false;
+                _errorMessage = null;
+                context.read<UserManagementCubit>().searchUser(email);
               },
               buttonName: 'Search',
             ),

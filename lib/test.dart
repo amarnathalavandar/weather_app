@@ -1,39 +1,30 @@
-import 'package:oauth2_client/oauth2_client.dart';
-import 'package:oauth2_client/oauth2_helper.dart';
+import 'package:flutter/material.dart';
+import 'okta_auth_service.dart';
 
-class OktaOAuthClient extends OAuth2Client {
-  OktaOAuthClient()
-      : super(
-          authorizeUrl: 'https://{yourOktaDomain}/oauth2/default/v1/authorize',
-          tokenUrl: 'https://{yourOktaDomain}/oauth2/default/v1/token',
-          redirectUri: 'http://localhost:8000/',
-          customUriScheme: 'http',
-        );
+void main() {
+  runApp(MyApp());
 }
 
-class OktaAuthService {
-  late OAuth2Helper oauth2Helper;
+class MyApp extends StatelessWidget {
+  final OktaAuthService _authService = OktaAuthService();
 
-  OktaAuthService() {
-    final client = OktaOAuthClient();
-    oauth2Helper = OAuth2Helper(
-      client,
-      grantType: OAuth2Helper.AUTHORIZATION_CODE_PKCE,
-      clientId: '{yourClientId}',
-      scopes: ['openid', 'profile', 'email'],
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Okta Web',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Flutter Okta Web'),
+        ),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () async {
+              await _authService.login();
+            },
+            child: Text('Login with Okta'),
+          ),
+        ),
+      ),
     );
-  }
-
-  Future<void> login() async {
-    final token = await oauth2Helper.getToken();
-    if (token != null) {
-      print('Access Token: ${token.accessToken}');
-    } else {
-      print('Login failed');
-    }
-  }
-
-  Future<void> logout() async {
-    // Implement logout logic if necessary
   }
 }

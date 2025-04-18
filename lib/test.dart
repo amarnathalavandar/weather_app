@@ -1,39 +1,33 @@
-import 'package:oauth2_client/oauth2_client.dart';
-import 'package:oauth2_client/oauth2_helper.dart';
-import 'package:oauth2_client/web_oauth2_client.dart';
+import 'package:openid_client/openid_client.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
-class MyWebOAuth2Client extends WebOAuth2Client {
-  MyWebOAuth2Client({
-    required String authorizeUrl,
-    required String tokenUrl,
-    required String redirectUri,
-  }) : super(
-          authorizeUrl: authorizeUrl,
-          tokenUrl: tokenUrl,
-          redirectUri: redirectUri,
-        );
+Future<void> loginWithOkta() async {
+  // Your OKTA domain and client info
+  const String issuerUrl = 'https://your-okta-domain.okta.com/oauth2/default';
+  const String clientId = 'your-client-id';
+  const String redirectUri = 'http://localhost:port/callback';
 
-  @override
-  Future<String?> authorize({
-    required String clientId,
-    String? clientSecret,
-    required String scope,
-    required String state,
-    Map<String, dynamic>? customParams,
-    bool enablePKCE = false,
-    bool preferEphemeralSession = false,
-  }) async {
-    // Build the full redirect URL
-    final authUrl = constructAuthorizeUrl(
-      clientId: clientId,
-      scope: scope,
-      state: state,
-      enablePKCE: enablePKCE,
-      customParams: customParams,
-    );
+  final uri = Uri.parse(issuerUrl);
+  final issuer = await Issuer.discover(uri);
+  final client = Client(issuer, clientId);
 
-    // Redirect the current window (no popup)
-    window.location.href = authUrl;
-    return null; // You won't get a response here; handle it in redirect page
+  // Create an authenticator with PKCE
+  final authenticator = Authenticator(
+    client,
+    scopes: ['openid', 'profile', 'email'],
+    port: 4000, // Choose any free port
+    redirectUri: Uri.parse(redirectUri),
+  );
+
+  try {
+    final c = await authenticator.authorize();
+    final token = await c.getTokenResponse();
+
+    print("Access token: ${token.accessToken}");
+    print("ID token: ${token.idToken}");
+
+    // You can now use the token for authenticated requests
+  } catch (e) {
+    print("Error during authentication: $e");
   }
 }
